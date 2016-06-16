@@ -1,0 +1,115 @@
+//
+//	Dealing with relationships
+//
+
+
+
+	var angle = new AngleBetween(mMouse,box1);
+	Binder.bindChanges(angle,'value',box1,'rotation');
+
+	//
+
+	Binder.bindChanges('angleFrom:mMouse, to:box1',box1,'rotation');
+
+	//
+	
+	Binder.bindChanges([mMouse,box1],'angle',box1,'rotation');
+		
+		// this makes the most sense. The brackets are essentially saying 'this thing which is made of two things'...
+	
+	//
+	
+	Binder.bindChanges(Angle,[mMouse,box1],box1,'rotation');
+
+		Angle
+		Distance
+		Space
+		Length
+		Area
+
+	// types of relationships
+
+	'angle'		// the angle between two points							
+	'distance'	// the distance between the two points
+	'space'		// the distance between the nearest edges of two objects
+
+
+	'length'	// the combined distance from two or more points
+	'area'		// the area of the form described by three or more points
+
+	//
+
+	Relationship.setValue(value);
+
+
+//
+//	Passing a variable to a mapping
+//
+
+	
+	var mapping = Binder.bindChanges(o1,rotation',o1,'time','*1');
+	Binder.bindChanges(mapping,'multiplier',this,'rVel')
+	
+	//
+	
+	Binder.bindChanges(o1,rotation',o1,'time',"*rVel");
+
+	
+	//
+	
+	Binder.bindChanges(o1,'rotation', o1,'seconds',*o1.rVelPerSecond);	
+	
+	...
+		
+		if(isNaN(multiplier))
+		{
+			var obj = mapping.split('.')[0];
+			var prop = mapping.split('.')[1];			
+			
+			var reference = new Reference(caller[obj],[prop]);  // caller doesn't exist... Need to pass these guys explicitly
+			
+			var mapping = new function(input)
+			{
+				return input * reference.valueOf()
+			}
+			mapping.reference = reference;
+			
+		}
+	
+	
+	//	
+	
+	Binder.bindChanges(o1,'rotation', o1,'seconds',['*rVelPerSecond',o1]);			??
+	
+	//
+	
+		
+	Binder.bindChanges(o1,'rotation', o1,'seconds',[o1,'*rVelPerSecond']);			??
+
+		// mapping to a variable
+
+//
+//	How to map things to velocity?
+//
+
+	// bounce?
+	
+		Binder.map(o1,'vel',[o1,wall],'collision');		
+		
+			
+			Collision is true of false... 0 or 1
+				
+				
+	//	
+	
+		General: when 'this' happens, 'that' happens.
+		
+			this: the value of the distance is 0
+			that: some value is flipped. the velocity. 
+			
+			velocity as a function of distance
+			
+			velocity = 
+			
+	
+		

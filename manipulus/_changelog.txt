@@ -1,0 +1,336 @@
+// 9.5.12
+
+	Created (a wonky) parser
+	
+		Can handle simple expressions:
+		
+			Binder.parse("clip.y = box.y + box.height/2");				
+
+		Binder.parseExpression("1+2*clip.width") returns reference to corresponding getter of a Set created from the terms
+			ie. 
+				Binder.parseExpression(1+1);
+				returns a reference to (new Set(1,1)).SUM
+
+			equivalent to:
+				var set = new Set(1,1);
+				Binder.createReference(set,"SUM");
+			
+		Binder.parseReference(timeline,"object.property")
+		
+	new getters for Set		
+		SUM 	the sum of the first teo items
+		MULT	the product of the first two items
+		DIV		the first item divided b the second
+
+	new manipulusLibrary.as shortcuts for main timeline
+
+		parse() and $()
+		
+!	KNOWN BUG:
+
+		Parser:
+			
+			Negative signs!
+			
+			-1+clip.y
+			
+	
+!	FOUND BUG: 
+	
+		Relationships that involve sets (box.y = Cursor.y + 10) are not 0 latency. 
+		Recommendation: When looking for dependencies, check for sets. OR, when making sets drivers, make their components drivers TOO... ?
+
+	
+	//
+	// todo
+	//
+		!!! Parser
+			negative numbers!!
+			
+			box.x = -box.y;
+			
+			or
+			
+			box.x = -box.y*2;
+			
+				convert to  (-1,box.y)MULT
+			
+			
+		costraints
+			parse("0 < box.y < 10");
+			
+		auto buttonMode = true
+		"set" properties
+		
+			distance
+			angle
+
+			parse(box.rotation = -[box,Cursor].angle)
+			parse(box.width = [p1,p2]distance)
+			
+		custom props like: left,right,bottom,top ? (could make part of interactive)
+				
+
+// 4.30.12
+
+	fixed difference property of set
+	added active getter/setter for Relationship class.
+		
+	
+// 03.09.11
+
+	Renamed Mapper to Binder
+	Renamed .absMap to .bind
+	Renamed .deltaMap to .bindChanges
+
+// 01.03.11
+
+x	added clase() and exception() to mapping. Language is a little more intelligable.
+x	can kind of do animation with sets...see MoveToTest_01
+
+	TODO: Relationship to same properties should return reference to the original mapping (for use in setting clauses)
+		(or, mapping.clause() should return reference to itself...)....
+
+// 12.29.11
+
+x	Can now add strings to mapping.
+x	Binder.makeDraggable(clip) now uses the coordinates of clip.parent
+x	Shorthand Relationships can now include 
+	
+		">10"
+		"<10"			
+		"==10"
+	
+	TODO: RelationshipSet? (or other kinds of data specific set)
+		Its really like a vector...
+
+// 12.28.11
+
+x	Added basic Cursor class (x,y,pressed)
+x	Set has new properties
+		angle			: Number
+		difference_?	: Number	the difference between [length-1][?] and [0][?] (where ? is some property)
+		
+	TODO: Bug: Some conflict with 
+	
+	TODO: Offset absolute mapping. or a mapping function variable. 
+		e.g.:
+	
+		Binder.bindChanges(obj,'rotation',mapping,'offset').isIf(obj,'pressed');
+		
+
+// 12.21.11
+
+x	Changed Selection to Set class. 
+x	Set has properties
+		midpointX	: Number
+		midpointY	: Number
+		midpoint	: Point
+		distance	: Number
+		distanceX	: Number
+		distanceY	: Number
+		distance_?	: Number	the difference between [length-1][?] and [0][?] (where ? is some property)
+		touching	: Boolean 	(read-only) untested...
+		
+x	New class RelationshipListView that lists Binder dependencies
+x	Binder.bindChanges accepts an array as a driver, will create a Set.
+	
+	TODO: these mappings?
+	
+		'>10'
+		'<10'
+		'!10'
+		'=10'
+			
+
+		Easier way to say this:
+			Binder.map(set,'index',clip,rotation,function(n){return (n==1)*45})	
+			?
+
+// 12.19.11
+
+x	New Selection Class
+		
+
+// 12.17.11
+
+x	New Metronome class
+		TODO: Double check counting. 
+		(How to use this to make something move back and forth?)
+
+x	Changed mapper parsing to use arguments.callee
+	
+	TODO:fix clock example...
+	
+// 12.16.11
+
+x	Created class Clock singleton with properties: milliseconds, seconds, fractionSeconds, minutes, hours, time
+x	'mapping' parameter of Binder.bindChanges() can now accept strings in the format:
+	
+		"*10"
+		"/10"
+
+	
+	How to create periodic motion? Different kinds of repetitions motion? 
+		Repeat?
+		PingPong?
+		period?		
+
+
+// 12.14.11
+
+x	Added support for 'touched' and 'pressed' as driving properties of any Display Object.
+x	Clause... ifIs()
+x		need absolute mapping...
+
+x	need shortcut for making something draggable
+			
+		
+		
+// 9.14.11
+
+x	mapping function and delay are aguments for Binder.bindChanges() now
+x	bindChanges alternative: 
+		Binder.bindChanges(driverObject,driverProperty,drivenObject,drivenProperty,multiplier,delay);
+	
+	NEED A TREE 
+		or store the whole thing in a graph structure...			
+
+
+// 9.13.11
+	
+x	re-introduce UI package (success!) Now relationships are super tight with 0 latency...
+	
+		: ( .... = D
+	
+		nue Binder			
+x			convert to singleton
+x			event dispatching
+x			implement shortcuts (for dragging)		
+x			suspend mappings
+				(what should happen about with the time stamps?...) // suspention should be a substitiute for removing and adding?
+
+			absoluteRelationship ?
+			'pressed' and 'touched'?
+
+			(how to suspend groups of mappings?) NOT NOW...
+			
+				'group'
+				'set'
+								
+				how to modify many as one...
+					link together.
+					manipulate one.
+					return a 'handle'... (a handle will be prioritized as an external-to-system property?...)
+					ie.
+
+						var handle = Binder.tie([clip1,clip2,clip3],'x');
+						handle.x = 100;					
+				
+		
+x		BinderEvent -> RelationshipEvent		
+x			.relationship -> .mapping
+
+x		Port actual UI Package...
+		
+x			replace Binder.map with Binder.bindChanges
+x			change BinderEvent.RELATIONSHIP... to BinderEvent.MAPPING...			
+x			( added Relationship.isTo(obj) and Relationship.isFrom(obj)... )
+x			replaced references to 'Relationship' and 'relationship' with 'Relationship' and 'mapping'
+x			replaced 'PropertiesCard.showRelationshipToken' with PropertiesCard.visualizeRelationship' ... REDACTED... visualizing mappng is different than creating/showing a token that can be grabbed or clicked...
+			
+x			need: "Binder.getRelationshipsInvolving(targetEntity)";
+x			changed: 'RelationshipToken' in 'TableTopTest.fla' to 'RelationshipToken'
+			
+x		BUG: Box.faith() creating 26 boxes.
+
+x		Refactor 'delay' back in
+x			delay is now in milliseconds, still results in proper final values...
+			need an official 'time' input... in order to propigate with authority...?			
+			something happens when an interjected mapping is removed and a pre-existing delayed one takes over... libTest_8
+			
+		
+		TODO:
+					BUG: can't drag token into new card, off, then back to original...					
+					BUG: Boxes not roll-overable when a properties card has been hidden on top of one...
+					removing relationships		(1 hour)
+					hilighting relationships	(design:8 hours)
+					hilighting what things are linked to what things on roll over 
+
+					Working with multiples
+						implement handling of multiples (designed)		(4 hours)
+
+					Constraints
+						Designing...	(4 hours)																			
+
+
+					Relationship card
+						delay?
+						'function' / 'curve'
+						suspend
+
+					'Touched' and 'pressed'
+					'time'
+						System
+							clock		(1 hour)
+							keyboard	
+						
+						// when would we eed overlapping inputs? : When something is being driven by time...
+							
+					Re-introduce 'delay'						
+
+					Push it out to the community?
+						not without 
+							delay				(1 hour)
+							constraints			(1 hour)
+							touch and press		(3 hour)
+							
+					tieing things to 'mouse'
+						Cursor
+							.x
+							.y
+					
+					adding boxes to stage (1 hour)
+					
+					SAVING
+						
+					
+					WHAT am I going to do with this thesis? Direction?
+						4 hours
+
+// 9.11.11
+
+	Binder.unmap() works
+	
+		'interjecting' works. (lib test 3)	
+
+	Putting Relationships into dependencies dictionary instead of references so we can store information about the relationship...	
+		// so far so good...
+		// no adding custom funciton yet.
+
+	todo:
+	
+		mapping.driver should be mapping.driverReference
+	
+		constraints?...
+			// when should they be applied? ... before propigating a change... 
+
+// 9.8.11
+
+	Fixed bug:
+	
+		If a property is a driver, it can not be set as driven.
+		Binder was creating a second reference to the prop. Didn't find the original. Was't looping through dependency keys.
+		
+	created: 
+		
+		Binder.unmap(o,p,o2,p2)		
+		
+		
+	todo:
+		
+		way to suspend relationships...
+		assuming they won't interfere with other relationships...
+	
+	
+	

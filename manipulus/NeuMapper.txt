@@ -1,0 +1,338 @@
+
+function update()
+{
+
+	// check inputs
+	
+	// check
+
+}
+
+
+
+
+/*
+
+	timeStamps can be crunked if added at different times....
+	
+
+*/
+
+/*
+
+//// goal, things driven by the mouse with a 0 latency should change immediately, and those changes should propigate...
+
+externalInputs/hooks
+
+inputs
+	mouseX
+	mouseY
+	Time
+	...?
+	
+update after
+	key press?
+	mouseDown?	
+	timer?
+	
+var drivenValues : Dictionary; (of objects)
+	
+*/
+
+function Binder(stage)
+{
+	
+	// maybe add these as needed?
+	stage.addEventListener(MouseEvent.MOUSE_MOVE,handleExternalEvent);
+	stage.addEventListener(MouseEvent.MOUSE_DOWN,handleExternalEvent);
+	stage.addEventListener(MouseEvent.MOUSE_UP,handleExternalEvent);	
+	stage.addEventListener(KeyboardEvent.KEY_DOWN,handleExternalEvent);	
+	stage.addEventListener(KeyboardEvent.KEY_UP,handleExternalEvent);	
+
+}
+
+// if we added the event lister
+function handleExternalEvent(e:Event)
+{
+	// check inputs
+	for each(var reference:Refence in dependencies)
+	{
+		if(reference.object == system)
+		{
+			update();
+			e.updateAfterEvent();
+			return;
+		}
+	}
+}
+
+
+function map(driverObject,driverProp,drivenObject,drivenProp):void
+{
+
+	// check for existing drivers and drivens...
+	var driver : Reference;
+	var driven : Reference;
+	
+	//
+	// Check to see if driver value is already driving things...
+	//
+	for (var key:Reference in dependencies) {
+		// iterates through each object key
+		if(key.object == driverObject && key.property == driverProperty)
+		{
+			driver = key;
+			trace('Using existing driver...')
+			
+			//
+			//	check to see if the driven value is already dependent on this driver
+			//
+			
+			for each( var dependecy : Reference in dependencies[key])
+			{
+				if(dependency.object == drivenObject && dependency.property == driverProperty)
+				{
+					trace('WARNING, mapping between the two properties exists! Ignoring.')
+					return; // return null?
+				}
+			}
+			
+			// while a reference to the driven prop may not exist as a dependency, it may exist elsewhere
+			// so need to check after this
+			
+		} 
+	}		
+	
+	if(driver==null)
+	{
+		driver = new Reference(driverObject,driverProperty);
+		dependencies[driver] = new Array();
+	}
+	
+	//
+	//	Check to see if we have a reference anywhere to the drivenObject.drivenProperty
+	//	(might be nice to do a references[obj] or something?, at least faster that way)	
+	//	(swap out vector for Array?)
+	//
+	
+	for each( var dependenciesForDriver : Array in dependencies)
+	{
+		for each( var dependency : Reference in dependenciesForDriver)
+		{
+			if(dependecy.object == drivenObject && dependecy.property == driverProperty)
+			{
+				trace('WARNING, mapping between the two properties exists! Ignoring call')
+				return false;
+			}
+		}
+	}
+		
+	dependencies[driver].push(driven); // info about dependency (mapping latency)? not yet...
+
+	//	var mapping = new Relationship(driver,driven);
+	//	dispatchEvent(new RelationshipEvent('MAPPING_CREATED',mapping));
+}
+
+//
+// happens continually? 
+//		Kinda have to... what if we tween something?
+//		unless we can register for events from something like that... i think we can register for tween events...
+// happens when something changes?
+//
+
+function update(e:Event=null)
+{
+		
+	if(e!=null) e.updateAfterEvent;
+	
+	var timeStamp = new Date().getTime();
+	
+	// update inputs, these are references to things that are read only...
+	// keep track of previous and current values...	 	
+	
+	var inputs = getReferencesTo(stage);
+	for each(var inputReference:Reference in inputs)
+	{
+		inputReference.update(timeStamp);	// RELATIVE CHANGES, still need previous and last
+	}
+	
+	// 'Propigate changes.' 
+	// if we're tracking it, it's because it has things its driving
+	
+	var dependency;
+	for each(inputReference in inputs)
+	{	
+		propigateChange(inputReference);
+	}
+	
+	// check for un updated references? stragglers
+	for each( reference in References)
+	{
+		if(reference.timeStamp != timeStamp) update();
+	}
+	
+	
+	// (multiple inputs?, average out, keep track of changes)	
+}
+
+// so a reference can be updated, and applied
+// don't want to apply more than once... so we.. use a reference to the value to doube check?
+// the references can be used to 'lock out' something from being updated? they can be used to prevent something from being touched?
+	
+
+// 'updateDependenciesOf'
+// when a referenced value has changed, anything watching it needs to be updated...
+//		update value
+// once it value has been changed, any references to it need to be updated
+//			
+		
+private function propigateChange(reference)
+{	 
+	var dependencies = dependencies[driver];
+	for each(var dependency in dependencies)
+	{				
+		if(dependency.timeStamp < currentTimeStamp)
+		{			
+			// it's ok to touch the value
+			// update the value (based on some kind of mapping...)
+			// wold it be ok to update based on two different drivers if they had different delays?...
+			dependency.object[dependency.property] += reference.changeInValue;	//where is the mapping kept? In the driver...
+			// update the dependent reference			
+			dependency.update();
+			// propigate the cahnge...			
+			propigateChange(dependency);			
+		}
+	}
+}
+
+//
+//
+//
+
+function getReferencesTo(object):Array
+{
+	var references = [];
+	for each(var reference:Reference of dependencies)
+	{
+		if(reference.object == object) references.push(reference)		
+	}
+	return references;
+}
+
+
+//
+//
+// 'Find out what's changed'
+
+Reference.update( timeStamp? )
+{
+	if(timeStamp == lastTimestamp) updating more than once!
+	
+	previousValue = currentValue;	
+	currentValue  = new ValueAtTime(object[property]);
+	
+	changeInValue = currentValue.value - previousValue.value;	
+	velocity	  = changeInValue/timeDif;	
+}
+
+
+//
+//
+// applyChanges
+
+	driverProp -> reference.delta -> driven value
+
+
+// latency in updates or in milliseconds...
+// need absolute accuracy...
+
+
+//
+//
+//
+
+ValueAtTime(value_ , time:uint=null)
+{
+	timeStamp = new Date().getTime();
+	value = value_
+}
+
+
+
+//
+//
+//
+
+
+connection(driver,driven);
+	mapping
+	
+circularConnection is really just two connections;
+
+
+//
+//
+//
+
+reference
+	.object
+	.property
+	.previousValue
+	.currentValue
+
+//
+//
+//
+
+Relationship
+
+	driver	: Reference;
+	driven	: Reference;
+	mapping : Function;
+	delay	: uint;
+	suspend	: Boolean;
+	
+
+	// (mappings[driverReference])
+
+//
+//
+//
+
+valueAtTime.
+	.timeStamp:uint
+	.value
+	
+	anEvent?
+	anImpulse?
+	.
+	
+// references for different value types?
+	number
+	int
+	uint
+	boolean
+	...
+	
+//
+//
+//
+/*
+
+Something that converts multiple inputs into one... a funnel
+It wouldn't be able to propigate until all its inputs were up to date.
+The last input to update and propigate would trigge the update of the funnel. 
+	
+	MultiReferene.update()
+	{
+		if every inputReference.timeStamp == Binder.currentTimestamp 
+		else return; // un updated...
+	}	
+	
+What happens if two multi references were dependent had each other as inputs?
+	ideally... we'd be able to find the dependency, and have them...
+		estimate?
+		go anyway? prioritized in some fashion?
+		estimate and correct?
+
+*/
